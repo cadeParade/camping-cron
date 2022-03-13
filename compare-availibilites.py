@@ -21,7 +21,7 @@ CAMPSITES = {
   '247663': 'Signal Mountain, Teton NP',
   '247664': 'Jenny Lake, Teton NP',
   '247785': 'Lizard Creek, Teton NP',
-  '258830': 'Colter Bay, Teton NP'
+  # '258830': 'Colter Bay, Teton NP'
 }
 
 DATES_INTERESTED = [
