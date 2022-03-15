@@ -3,8 +3,8 @@ import datetime
 import sendgrid
 import os
 from os.path import exists
-
-
+import psycopg2
+import json
 
 BASE_DATA_FILE = 'base_data.json'
 
@@ -40,6 +40,11 @@ DATES_INTERESTED = [
   '2022-08-29T00:00:00Z',
 ]
 
+db_host = os.environ.get('POSTGRES_HOST', 'oregon-postgres.render.com')
+db_pw = os.environ.get('POSTGRES_PW')
+conn = psycopg2.connect(f"dbname=camping_availability user=camping_availability_user host={db_host} password={db_pw}")
+cur = conn.cursor()
+
 def send_email(subject, text):
   sg = sendgrid.SendGridAPIClient(api_key=os.environ.get('SENDGRID_API_KEY'))
   data = {
@@ -72,9 +77,9 @@ def write_base(data):
 
 
 def read_base():
-  with open(BASE_DATA_FILE) as json_file:
-    data = json.load(json_file)
-    return data
+  cur.execute('select availabilities from availabilities order by id desc limit 1;')
+  record = cur.fetchone();
+  return json.loads(record[0])
 
 
 def get_month_data_for_campsite(campground_id):
@@ -156,11 +161,14 @@ def gather_data(campsites, dates_interested):
 
 
   if len(all_new_availabilities) > 0:
-    send_email('new camping availabilites', '\n'.join([avail.email_line() for avail in all_new_availabilities]))
+    print('sending email')
+    # send_email('new camping availabilites', '\n'.join([avail.email_line() for avail in all_new_availabilities]))
   else:
     print('not sending email')
 
-  write_base(export_data)
+  # write_base(export_data)
+  cur.execute("INSERT INTO availabilities (availabilities) VALUES (%s)", (json.dumps(export_data),))
+  conn.commit()
   return email_text
 
 
