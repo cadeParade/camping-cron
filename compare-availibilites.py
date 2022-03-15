@@ -161,12 +161,10 @@ def gather_data(campsites, dates_interested):
 
 
   if len(all_new_availabilities) > 0:
-    print('sending email')
-    # send_email('new camping availabilites', '\n'.join([avail.email_line() for avail in all_new_availabilities]))
+    send_email('new camping availabilites', '\n'.join([avail.email_line() for avail in all_new_availabilities]))
   else:
     print('not sending email')
 
-  # write_base(export_data)
   cur.execute("INSERT INTO availabilities (availabilities) VALUES (%s)", (json.dumps(export_data),))
   conn.commit()
   return email_text
