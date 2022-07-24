@@ -18,26 +18,14 @@ CAMPSITES = {
   '251869': 'Many Glacier, Glacier NP',
   '232492': 'St. Mary, Glacier NP',
   '234791': 'Devil Creek, NEAR Glacier NP',
-  '247663': 'Signal Mountain, Teton NP',
-  '247664': 'Jenny Lake, Teton NP',
-  '247785': 'Lizard Creek, Teton NP',
+  # '247663': 'Signal Mountain, Teton NP',
+  # '247664': 'Jenny Lake, Teton NP',
+  # '247785': 'Lizard Creek, Teton NP',
   # '258830': 'Colter Bay, Teton NP'
 }
 
 DATES_INTERESTED = [
-  '2022-08-17T00:00:00Z',
-  '2022-08-18T00:00:00Z',
-  '2022-08-19T00:00:00Z',
-  '2022-08-20T00:00:00Z',
-  '2022-08-21T00:00:00Z',
-  '2022-08-22T00:00:00Z',
-  '2022-08-23T00:00:00Z',
-  '2022-08-24T00:00:00Z',
-  '2022-08-25T00:00:00Z',
-  '2022-08-26T00:00:00Z',
-  '2022-08-27T00:00:00Z',
   '2022-08-28T00:00:00Z',
-  '2022-08-29T00:00:00Z',
 ]
 
 db_host = os.environ.get('POSTGRES_HOST', 'oregon-postgres.render.com')
@@ -52,14 +40,14 @@ def send_email(subject, text):
       {
         "to": [
           {
-            "email": "lrc3233@gmail.com"
+            "email": os.environ.get('EMAIL_ADDRESS')
           }
         ],
         "subject": subject
       }
     ],
     "from": {
-      "email": "lrc3233@gmail.com"
+      "email": os.environ.get('EMAIL_ADDRESS')
     },
     "content": [
       {
