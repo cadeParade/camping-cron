@@ -6,6 +6,8 @@ from os.path import exists
 import psycopg2
 import json
 
+# CREATE TABLE availabilities (id serial PRIMARY KEY, availabilities TEXT);
+
 BASE_DATA_FILE = 'base_data.json'
 
 DATE_FORMAT = '%Y-%m-%dT%H:%M:%SZ'
@@ -67,7 +69,8 @@ def write_base(data):
 def read_base():
   cur.execute('select availabilities from availabilities order by id desc limit 1;')
   record = cur.fetchone();
-  return json.loads(record[0])
+  if record:
+    return json.loads(record[0])
 
 
 def get_month_data_for_campsite(campground_id):
@@ -138,14 +141,15 @@ def gather_data(campsites, dates_interested):
 
   base_data = read_base()
 
-  for campground_id, campground_name in CAMPSITES.items():
-    campsites_data = get_month_data_for_campsite(campground_id)
-    export_data[campground_name] = campsites_data
+  if base_data:
+    for campground_id, campground_name in CAMPSITES.items():
+      campsites_data = get_month_data_for_campsite(campground_id)
+      export_data[campground_name] = campsites_data
 
-    dates_available_for_sites = {}
+      dates_available_for_sites = {}
 
-    new_availibilities = compare_availabilities(base_data[campground_name], campsites_data, campground_name, campground_id)
-    all_new_availabilities.extend(new_availibilities)
+      new_availibilities = compare_availabilities(base_data[campground_name], campsites_data, campground_name, campground_id)
+      all_new_availabilities.extend(new_availibilities)
 
 
   if len(all_new_availabilities) > 0:
