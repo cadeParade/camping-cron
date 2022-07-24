@@ -30,7 +30,7 @@ DATES_INTERESTED = [
 
 db_host = os.environ.get('POSTGRES_HOST', 'oregon-postgres.render.com')
 db_pw = os.environ.get('POSTGRES_PW')
-conn = psycopg2.connect(f"dbname=camping_availability user=camping_availability_user host={db_host} password={db_pw}")
+conn = psycopg2.connect(f"dbname=camping_availability_3g5n user=camping_availability_user host={db_host} password={db_pw}")
 cur = conn.cursor()
 
 def send_email(subject, text):
