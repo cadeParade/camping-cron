@@ -180,9 +180,9 @@ def gather_data(campsites, dates_interested):
 
         dates_available_for_sites = {}
 
-        new_availibilities = compare_availabilities(
-            base_data[campground_name], campsites_data, campground_name, campground_id)
-        all_new_availabilities.extend(new_availibilities)
+        # new_availibilities = compare_availabilities(
+        #     base_data[campground_name], campsites_data, campground_name, campground_id)
+        # all_new_availabilities.extend(new_availibilities)
 
     if len(all_new_availabilities) > 0:
         # print(all_new_availabilities)
