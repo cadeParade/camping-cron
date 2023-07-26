@@ -27,7 +27,6 @@ CAMPSITES = {
     '245558': 'Dardanelle, NEAR yosemite',
     '245552': 'Beardsley, NEAR yosemite',
     '232254': 'Pinecrest, NEAR yosemite',
-    # '258830': 'Colter Bay, Teton NP'
 }
 
 DATES_INTERESTED = [
@@ -48,46 +47,19 @@ cur = conn.cursor()
 
 
 def send_email(subject, text):
-    print('API KEY', os.environ.get('SENDGRID_API_KEY'))
     sg = SendGridAPIClient(os.environ.get('SENDGRID_API_KEY'))
-    # response = sg.send(message)
 
-    # sg = sendgrid.SendGridAPIClient(os.environ.get('SENDGRID_API_KEY'))
     message = Mail(
         from_email=os.environ.get('EMAIL_ADDRESS'),
         to_emails=os.environ.get('EMAIL_ADDRESS'),
         subject=subject,
         html_content=text)
-    # data = {
-    #     "personalizations": [
-    #         {
-    #             "to": [
-    #                 {
-    #                     "email": os.environ.get('EMAIL_ADDRESS')
-    #                 }
-    #             ],
-    #             "subject": subject
-    #         }
-    #     ],
-    #     "from": {
-    #         "email": os.environ.get('EMAIL_ADDRESS')
-    #     },
-    #     "content": [
-    #         {
-    #             "type": "text/plain",
-    #             "value": text
-    #         }
-    #     ]
-    # }
-
     try:
         sg.send(message)
-    # self._make_request(opener, request, timeout=timeout)
     except Exception as e:
         print("ERROR!!!!")
         print(e.body)
         raise e
-    # sg.client.mail.send.post(request_body=data)
 
 
 def write_base(data):
@@ -172,20 +144,18 @@ def gather_data(campsites, dates_interested):
     all_new_availabilities = []
 
     base_data = read_base()
-    # if base_data:
-    print('inside base_data')
-    for campground_id, campground_name in CAMPSITES.items():
-        campsites_data = get_month_data_for_campsite(campground_id)
-        export_data[campground_name] = campsites_data
+    if base_data:
+        for campground_id, campground_name in CAMPSITES.items():
+            campsites_data = get_month_data_for_campsite(campground_id)
+            export_data[campground_name] = campsites_data
 
-        dates_available_for_sites = {}
+            dates_available_for_sites = {}
 
-        # new_availibilities = compare_availabilities(
-        #     base_data[campground_name], campsites_data, campground_name, campground_id)
-        # all_new_availabilities.extend(new_availibilities)
+            new_availibilities = compare_availabilities(
+                base_data[campground_name], campsites_data, campground_name, campground_id)
+            all_new_availabilities.extend(new_availibilities)
 
     if len(all_new_availabilities) > 0:
-        # print(all_new_availabilities)
         send_email('new camping availabilites', '\n'.join(
             [avail.email_line() for avail in all_new_availabilities]))
     else:
@@ -198,4 +168,3 @@ def gather_data(campsites, dates_interested):
 
 
 gather_data(CAMPSITES, DATES_INTERESTED)
-# send_email('ballet on the 7th?', gather_data(CAMPSITES, DATES_INTERESTED))
