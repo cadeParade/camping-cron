@@ -43,7 +43,7 @@ DATES_INTERESTED = [
 db_host = os.environ.get('POSTGRES_HOST', 'oregon-postgres.render.com')
 db_pw = os.environ.get('POSTGRES_PW')
 conn = psycopg2.connect(
-    f"dbname=camping_availability_s7vg user=camping_availability_user host={db_host} password={db_pw}")
+    f"dbname=camping_availability_s7vg user=camping_availability_s7vg_user host={db_host} password={db_pw}")
 cur = conn.cursor()
 
 
