@@ -6,9 +6,8 @@ import os
 from os.path import exists
 import psycopg2
 import json
-from sendgrid.helpers.mail import Mail
+from sendgrid.helpers.mail import Mail, To
 from sendgrid import SendGridAPIClient
-
 
 # CREATE TABLE availabilities (id serial PRIMARY KEY, availabilities TEXT);
 
@@ -51,7 +50,8 @@ def send_email(subject, text):
 
     message = Mail(
         from_email=os.environ.get('EMAIL_ADDRESS'),
-        to_emails=os.environ.get('EMAIL_ADDRESS'),
+        to_emails=[To(os.environ.get('EMAIL_ADDRESS')),
+                   To(os.environ.get('EMAIL_ADDRESS_2'))],
         subject=subject,
         html_content=text)
     try:
