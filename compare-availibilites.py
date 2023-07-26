@@ -1,11 +1,14 @@
 import urllib.request
 import json
 import datetime
-import sendgrid
+# import sendgrid
 import os
 from os.path import exists
 import psycopg2
 import json
+from sendgrid.helpers.mail import Mail
+from sendgrid import SendGridAPIClient
+
 
 # CREATE TABLE availabilities (id serial PRIMARY KEY, availabilities TEXT);
 
@@ -14,7 +17,7 @@ BASE_DATA_FILE = 'base_data.json'
 DATE_FORMAT = '%Y-%m-%dT%H:%M:%SZ'
 
 MONTH = '08'
-YEAR = '2022'
+YEAR = '2023'
 
 CAMPSITES = {
     '232781': 'Hume Lake, Sequoia NP',
@@ -40,34 +43,51 @@ DATES_INTERESTED = [
 db_host = os.environ.get('POSTGRES_HOST', 'oregon-postgres.render.com')
 db_pw = os.environ.get('POSTGRES_PW')
 conn = psycopg2.connect(
-    f"dbname=camping_availability_3g5n user=camping_availability_user host={db_host} password={db_pw}")
+    f"dbname=camping_availability_s7vg user=camping_availability_user host={db_host} password={db_pw}")
 cur = conn.cursor()
 
 
 def send_email(subject, text):
-    sg = sendgrid.SendGridAPIClient(api_key=os.environ.get('SENDGRID_API_KEY'))
-    data = {
-        "personalizations": [
-            {
-                "to": [
-                    {
-                        "email": os.environ.get('EMAIL_ADDRESS')
-                    }
-                ],
-                "subject": subject
-            }
-        ],
-        "from": {
-            "email": os.environ.get('EMAIL_ADDRESS')
-        },
-        "content": [
-            {
-                "type": "text/plain",
-                "value": text
-            }
-        ]
-    }
-    sg.client.mail.send.post(request_body=data)
+    print('API KEY', os.environ.get('SENDGRID_API_KEY'))
+    sg = SendGridAPIClient(os.environ.get('SENDGRID_API_KEY'))
+    # response = sg.send(message)
+
+    # sg = sendgrid.SendGridAPIClient(os.environ.get('SENDGRID_API_KEY'))
+    message = Mail(
+        from_email=os.environ.get('EMAIL_ADDRESS'),
+        to_emails=os.environ.get('EMAIL_ADDRESS'),
+        subject=subject,
+        html_content=text)
+    # data = {
+    #     "personalizations": [
+    #         {
+    #             "to": [
+    #                 {
+    #                     "email": os.environ.get('EMAIL_ADDRESS')
+    #                 }
+    #             ],
+    #             "subject": subject
+    #         }
+    #     ],
+    #     "from": {
+    #         "email": os.environ.get('EMAIL_ADDRESS')
+    #     },
+    #     "content": [
+    #         {
+    #             "type": "text/plain",
+    #             "value": text
+    #         }
+    #     ]
+    # }
+
+    try:
+        sg.send(message)
+    # self._make_request(opener, request, timeout=timeout)
+    except Exception as e:
+        print("ERROR!!!!")
+        print(e.body)
+        raise e
+    # sg.client.mail.send.post(request_body=data)
 
 
 def write_base(data):
@@ -87,6 +107,7 @@ def get_month_data_for_campsite(campground_id):
     with urllib.request.urlopen(
         f"https://www.recreation.gov/api/camps/availability/campground/{campground_id}/month?start_date={YEAR}-{MONTH}-01T00%3A00%3A00.000Z"
     ) as url:
+        print('url', url)
         return json.loads(url.read().decode())['campsites']
 
 
@@ -151,19 +172,20 @@ def gather_data(campsites, dates_interested):
     all_new_availabilities = []
 
     base_data = read_base()
+    # if base_data:
+    print('inside base_data')
+    for campground_id, campground_name in CAMPSITES.items():
+        campsites_data = get_month_data_for_campsite(campground_id)
+        export_data[campground_name] = campsites_data
 
-    if base_data:
-        for campground_id, campground_name in CAMPSITES.items():
-            campsites_data = get_month_data_for_campsite(campground_id)
-            export_data[campground_name] = campsites_data
+        dates_available_for_sites = {}
 
-            dates_available_for_sites = {}
-
-            new_availibilities = compare_availabilities(
-                base_data[campground_name], campsites_data, campground_name, campground_id)
-            all_new_availabilities.extend(new_availibilities)
+        new_availibilities = compare_availabilities(
+            base_data[campground_name], campsites_data, campground_name, campground_id)
+        all_new_availabilities.extend(new_availibilities)
 
     if len(all_new_availabilities) > 0:
+        # print(all_new_availabilities)
         send_email('new camping availabilites', '\n'.join(
             [avail.email_line() for avail in all_new_availabilities]))
     else:
