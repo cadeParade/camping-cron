@@ -26,6 +26,7 @@ CAMPSITES = {
     '245558': 'Dardanelle, NEAR yosemite',
     '245552': 'Beardsley, NEAR yosemite',
     '232254': 'Pinecrest, NEAR yosemite',
+    '10083845': 'Tamarack Flats, Yosemite NP',
 }
 
 DATES_INTERESTED = [
