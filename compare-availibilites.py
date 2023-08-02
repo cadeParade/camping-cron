@@ -8,6 +8,7 @@ import psycopg2
 import json
 from sendgrid.helpers.mail import Mail, To
 from sendgrid import SendGridAPIClient
+import time
 
 # CREATE TABLE availabilities (id serial PRIMARY KEY, availabilities TEXT);
 
@@ -27,6 +28,14 @@ CAMPSITES = {
     '245552': 'Beardsley, NEAR yosemite',
     '232254': 'Pinecrest, NEAR yosemite',
     '10083845': 'Tamarack Flats, Yosemite NP',
+    '10124502': 'Azalea, Sequoia NP',
+    '234752': 'Sunset, Sequoia NP',
+    '249979': 'Potwisha, Sequoia NP',
+    '232447': 'Upper pines, Yosemite NP',
+    '232450': 'Lower Pines, Yosemite NP',
+    '232449': 'North Pines, Yosemite NP',
+    '232451': 'Crane Flat, Yosemite NP',
+    '233772': 'Diamond O, NEAR yosemite',
 }
 
 DATES_INTERESTED = [
@@ -94,7 +103,6 @@ def get_month_data_for_campsite(campground_id):
     with urllib.request.urlopen(
         f"https://www.recreation.gov/api/camps/availability/campground/{campground_id}/month?start_date={YEAR}-{MONTH}-01T00%3A00%3A00.000Z"
     ) as url:
-        print('url', url)
         return json.loads(url.read().decode())['campsites']
 
 
@@ -161,16 +169,19 @@ def gather_data(campsites, dates_interested):
     base_data = read_base()
     if base_data:
         for campground_id, campground_name in campsites.items():
+            print(campground_name)
             campsites_data = get_month_data_for_campsite(campground_id)
             export_data[campground_name] = campsites_data
-
             dates_available_for_sites = {}
+
             if (campground_name in base_data):
                 new_availibilities = compare_availabilities(
                     base_data[campground_name], campsites_data, campground_name, campground_id)
                 all_new_availabilities.extend(new_availibilities)
             else:
                 base_data[campground_name] = campsites_data
+
+            time.sleep(3)
 
     if len(all_new_availabilities) > 0:
         send_email('new camping availabilites', '\n'.join(
