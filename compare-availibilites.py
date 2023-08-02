@@ -26,7 +26,7 @@ CAMPSITES = {
     '245558': 'Dardanelle, NEAR yosemite',
     '245552': 'Beardsley, NEAR yosemite',
     '232254': 'Pinecrest, NEAR yosemite',
-    # '10083845': 'Tamarack Flats, Yosemite NP',
+    '10083845': 'Tamarack Flats, Yosemite NP',
 }
 
 DATES_INTERESTED = [
@@ -39,10 +39,24 @@ DATES_INTERESTED = [
     '2023-08-22T00:00:00Z',
 ]
 
-db_host = os.environ.get('POSTGRES_HOST', 'oregon-postgres.render.com')
+LOCAL_DB_NAME = 'camping_availability_3g5n'
+REMOTE_DB_NAME = 'camping_availability_s7vg'
+LOCAL_USER_NAME = 'camping_availability_user'
+REMOTE_USER_NAME = 'camping_availability_s7vg_user'
+REMOTE_DB_HOST = 'oregon-postgres.render.com'
+LOCAL_DB_HOST = 'localhost'
+
+is_prod = os.environ.get('POSTGRES_HOST')
+
+db_name = REMOTE_DB_NAME if is_prod else LOCAL_DB_NAME
+db_user = REMOTE_USER_NAME if is_prod else LOCAL_USER_NAME
+db_host = REMOTE_DB_HOST if is_prod else LOCAL_DB_HOST
+
+# db_host = os.environ.get(
+#     'POSTGRES_HOST', 'oregon-postgres.render.com') or LOCAL_DB_HOST
 db_pw = os.environ.get('POSTGRES_PW')
 conn = psycopg2.connect(
-    f"dbname=camping_availability_s7vg user=camping_availability_s7vg_user host={db_host} password={db_pw}")
+    f"dbname={db_name} user={db_user} host={db_host} password={db_pw}")
 cur = conn.cursor()
 
 
@@ -146,15 +160,17 @@ def gather_data(campsites, dates_interested):
 
     base_data = read_base()
     if base_data:
-        for campground_id, campground_name in CAMPSITES.items():
+        for campground_id, campground_name in campsites.items():
             campsites_data = get_month_data_for_campsite(campground_id)
             export_data[campground_name] = campsites_data
 
             dates_available_for_sites = {}
-
-            new_availibilities = compare_availabilities(
-                base_data[campground_name], campsites_data, campground_name, campground_id)
-            all_new_availabilities.extend(new_availibilities)
+            if (campground_name in base_data):
+                new_availibilities = compare_availabilities(
+                    base_data[campground_name], campsites_data, campground_name, campground_id)
+                all_new_availabilities.extend(new_availibilities)
+            else:
+                base_data[campground_name] = campsites_data
 
     if len(all_new_availabilities) > 0:
         send_email('new camping availabilites', '\n'.join(
