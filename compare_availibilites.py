@@ -9,86 +9,77 @@ import json
 from sendgrid.helpers.mail import Mail, To
 from sendgrid import SendGridAPIClient
 import time
-
+import requests
+from dotenv import load_dotenv
+load_dotenv()
 # CREATE TABLE availabilities (id serial PRIMARY KEY, availabilities TEXT);
 
-BASE_DATA_FILE = 'base_data.json'
+# BASE_DATA_FILE = 'base_data.json'
 
 DATE_FORMAT = '%Y-%m-%dT%H:%M:%SZ'
 
 MONTH = '08'
-YEAR = '2023'
+YEAR = '2024'
 
 CAMPSITES = {
     '232781': 'Hume Lake, Sequoia NP',
-    '232782': 'Princess, Sequoia NP',
-    '232785': 'Stony Creek, Sequoia NP',
-    '234458': 'Big Meadows, NEAR Sequoia NP',
-    '245558': 'Dardanelle, NEAR yosemite',
-    '245552': 'Beardsley, NEAR yosemite',
-    '232254': 'Pinecrest, NEAR yosemite',
-    '10083845': 'Tamarack Flats, Yosemite NP',
+    '233363': 'Eshom, Sequoia NP',
+    '232782': 'Princess, NEAR Sequoia NP',
+    '232785': 'Stony Creek, NEAR Sequoia NP',
+    '256932': 'Big Meadows, NEAR Sequoia NP',
     '10124502': 'Azalea, Sequoia NP',
-    '234752': 'Sunset, Sequoia NP',
+    '251363': 'Ten Mile, NEAR Sequoia NP',
+    '10044710': 'Atwell Mill, Sequoia NP, up windy road',
     '249979': 'Potwisha, Sequoia NP',
+    '232461': 'Lodgepole, Sequoia NP',
+    '253917': 'Sentinel Campground, Sequoia NP',
+    '10083831': 'Porcupine Flat, Yosemite NP',
     '232447': 'Upper pines, Yosemite NP',
     '232450': 'Lower Pines, Yosemite NP',
     '232449': 'North Pines, Yosemite NP',
+    '245558': 'Dardanelle, NEAR yosemite',
+    '245552': 'Beardsley, NEAR yosemite',
+    '232254': 'Pinecrest, NEAR yosemite',
     '232451': 'Crane Flat, Yosemite NP',
     '233772': 'Diamond O, NEAR yosemite',
+    # '10083845': 'Tamarack Flats, Yosemite NP',
+    # '234752': 'Sunset, Sequoia NP',
 }
 
 DATES_INTERESTED = [
-    '2023-08-16T00:00:00Z',
-    '2023-08-17T00:00:00Z',
-    '2023-08-18T00:00:00Z',
-    '2023-08-19T00:00:00Z',
-    '2023-08-20T00:00:00Z',
-    '2023-08-21T00:00:00Z',
-    '2023-08-22T00:00:00Z',
+    '2024-08-13T00:00:00Z',
+    '2024-08-14T00:00:00Z',
+    '2024-08-15T00:00:00Z',
+    '2024-08-16T00:00:00Z',
+    '2024-08-17T00:00:00Z',
+    '2024-08-18T00:00:00Z',
+    '2024-08-19T00:00:00Z',
 ]
 
-LOCAL_DB_NAME = 'camping_availability_3g5n'
-REMOTE_DB_NAME = 'camping_availability_s7vg'
-LOCAL_USER_NAME = 'camping_availability_user'
-REMOTE_USER_NAME = 'camping_availability_s7vg_user'
-REMOTE_DB_HOST = 'oregon-postgres.render.com'
-LOCAL_DB_HOST = 'localhost'
-
+# LOCAL_DB_NAME = 'camping_availability_3g5n'
+# REMOTE_DB_NAME = 'camping_availability_s7vg'
+# LOCAL_USER_NAME = 'camping_availability_user'
+# REMOTE_USER_NAME = 'camping_availability_s7vg_user'
+# REMOTE_DB_HOST = 'oregon-postgres.render.com'
+# LOCAL_DB_HOST = 'localhost'
 is_prod = os.environ.get('POSTGRES_HOST')
 
-db_name = REMOTE_DB_NAME if is_prod else LOCAL_DB_NAME
-db_user = REMOTE_USER_NAME if is_prod else LOCAL_USER_NAME
-db_host = REMOTE_DB_HOST if is_prod else LOCAL_DB_HOST
+db_name = os.getenv('DB_NAME')
+db_user = os.getenv('USER_NAME')
+db_host = os.getenv('DB_HOST')
 
-# db_host = os.environ.get(
-#     'POSTGRES_HOST', 'oregon-postgres.render.com') or LOCAL_DB_HOST
-db_pw = os.environ.get('POSTGRES_PW')
+
+db_pw = os.getenv('POSTGRES_PW')
 conn = psycopg2.connect(
     f"dbname={db_name} user={db_user} host={db_host} password={db_pw}")
 cur = conn.cursor()
 
 
-def send_email(subject, text):
-    sg = SendGridAPIClient(os.environ.get('SENDGRID_API_KEY'))
-
-    message = Mail(
-        from_email=os.environ.get('EMAIL_ADDRESS'),
-        to_emails=[To(os.environ.get('EMAIL_ADDRESS')),
-                   To(os.environ.get('EMAIL_ADDRESS_2'))],
-        subject=subject,
-        html_content=text)
-    try:
-        sg.send(message)
-    except Exception as e:
-        print("ERROR!!!!")
-        print(e.body)
-        raise e
-
-
-def write_base(data):
-    with open(BASE_DATA_FILE, 'w') as outfile:
-        json.dump(data, outfile)
+def send_slack_notif(message):
+    slack_webhook_url = os.getenv('SLACK_WEBHOOK_URL')
+    headers = {'Content-type': 'application/json'}
+    data = {"text": message}
+    response = requests.post(slack_webhook_url, headers=headers, json=data)
 
 
 def read_base():
@@ -100,10 +91,18 @@ def read_base():
 
 
 def get_month_data_for_campsite(campground_id):
-    with urllib.request.urlopen(
-        f"https://www.recreation.gov/api/camps/availability/campground/{campground_id}/month?start_date={YEAR}-{MONTH}-01T00%3A00%3A00.000Z"
-    ) as url:
-        return json.loads(url.read().decode())['campsites']
+    try:
+        with urllib.request.urlopen(
+            f"https://www.recreation.gov/api/camps/availability/campground/{campground_id}/month?start_date={YEAR}-{MONTH}-01T00%3A00%3A00.000Z"
+        ) as url:
+            return json.loads(url.read().decode())['campsites']
+    except Exception as e:
+        try:
+            error = e.read().decode()
+            json.loads(error)
+            raise Exception(f"Error: {error}")
+        except:
+            raise Exception(f"Error: {e}")
 
 
 def compare_availabilities(base_availabilities, head_availabilities, campground_name, campground_id):
@@ -115,12 +114,12 @@ def compare_availabilities(base_availabilities, head_availabilities, campground_
                 date)
             head_site_avail = head_availabilities[campsite_id]['availabilities'].get(
                 date)
-
             if base_site_avail != head_site_avail and head_site_avail == 'Available':
                 site_available_dates.append(date)
 
         new_avail = Availability(
             site_available_dates, head_availabilities[campsite_id], campground_name, campground_id)
+
         if 'group' in new_avail.loop() or 'Group' in new_avail.loop():
             continue
 
@@ -154,26 +153,29 @@ class Availability:
         return self.site_data['loop']
 
     def url(self):
-        return f"https://www.recreation.gov/camping/campsites/{self.site_id()}"
+        start_date = self.available_dates[0]
+        formatted_start_date = datetime.datetime.strptime(
+            start_date, '%Y-%m-%dT%H:%M:%SZ').strftime('%Y-%m-%d')
+        return f"https://www.recreation.gov/camping/campsites/{self.site_id()}?startDate={formatted_start_date}"
+        # f"https://www.recreation.gov/camping/campsites/{self.site_id()}?startDate=2024-08-19"
+        # return f"https://www.recreation.gov/camping/campsites/{self.site_id()}"
 
     def email_line(self):
         dates = ', '.join(self.formatted_dates())
-        return f"Campsite '{self.site_no()}' in loop {self.loop()} at {self.campground_name} is available for night of {dates}. {self.url()}"
+        return f" Campsite '{self.site_no()}' in loop {self.loop()} at {self.campground_name} is available for night of {dates}. {self.url()}"
+
+# For single campsite data: https://ridb.recreation.gov/api/v1/campsites/10174601
 
 
 def gather_data(campsites, dates_interested):
     email_text = []
     export_data = {}
     all_new_availabilities = []
-
     base_data = read_base()
     if base_data:
         for campground_id, campground_name in campsites.items():
-            print(campground_name)
             campsites_data = get_month_data_for_campsite(campground_id)
             export_data[campground_name] = campsites_data
-            dates_available_for_sites = {}
-
             if (campground_name in base_data):
                 new_availibilities = compare_availabilities(
                     base_data[campground_name], campsites_data, campground_name, campground_id)
@@ -184,9 +186,10 @@ def gather_data(campsites, dates_interested):
             time.sleep(3)
 
     if len(all_new_availabilities) > 0:
-        send_email('new camping availabilites', '\n'.join(
+        send_slack_notif(message='\n'.join(
             [avail.email_line() for avail in all_new_availabilities]))
     else:
+        send_slack_notif(message="No new availabilities")
         print('not sending email')
 
     cur.execute("INSERT INTO availabilities (availabilities) VALUES (%s)",
@@ -195,4 +198,5 @@ def gather_data(campsites, dates_interested):
     return email_text
 
 
-gather_data(CAMPSITES, DATES_INTERESTED)
+if __name__ == "__main__":
+    gather_data(CAMPSITES, DATES_INTERESTED)
