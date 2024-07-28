@@ -164,18 +164,18 @@ def gather_data(campsites, dates_interested):
     export_data = {}
     all_new_availabilities = []
     base_data = read_base()
-    if base_data:
-        for campground_id, campground_name in campsites.items():
-            campsites_data = get_month_data_for_campsite(campground_id)
-            export_data[campground_name] = campsites_data
-            if (campground_name in base_data):
-                new_availibilities = compare_availabilities(
-                    base_data[campground_name], campsites_data, campground_name, campground_id)
-                all_new_availabilities.extend(new_availibilities)
-            else:
-                base_data[campground_name] = campsites_data
+    # if base_data:
+    for campground_id, campground_name in campsites.items():
+        campsites_data = get_month_data_for_campsite(campground_id)
+        export_data[campground_name] = campsites_data
+    #         if (campground_name in base_data):
+    #             new_availibilities = compare_availabilities(
+    #                 base_data[campground_name], campsites_data, campground_name, campground_id)
+    #             all_new_availabilities.extend(new_availibilities)
+    #         else:
+    #             base_data[campground_name] = campsites_data
 
-            time.sleep(3)
+    #         time.sleep(3)
 
     if len(all_new_availabilities) > 0:
         send_slack_notif(message='\n'.join(
