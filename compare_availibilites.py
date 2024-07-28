@@ -56,20 +56,12 @@ DATES_INTERESTED = [
     '2024-08-19T00:00:00Z',
 ]
 
-# LOCAL_DB_NAME = 'camping_availability_3g5n'
-# REMOTE_DB_NAME = 'camping_availability_s7vg'
-# LOCAL_USER_NAME = 'camping_availability_user'
-# REMOTE_USER_NAME = 'camping_availability_s7vg_user'
-# REMOTE_DB_HOST = 'oregon-postgres.render.com'
-# LOCAL_DB_HOST = 'localhost'
 is_prod = os.environ.get('POSTGRES_HOST')
-
 db_name = os.getenv('DB_NAME')
 db_user = os.getenv('USER_NAME')
 db_host = os.getenv('DB_HOST')
-
-
 db_pw = os.getenv('POSTGRES_PW')
+
 conn = psycopg2.connect(
     f"dbname={db_name} user={db_user} host={db_host} password={db_pw}")
 cur = conn.cursor()
@@ -189,7 +181,6 @@ def gather_data(campsites, dates_interested):
         send_slack_notif(message='\n'.join(
             [avail.email_line() for avail in all_new_availabilities]))
     else:
-        send_slack_notif(message="No new availabilities")
         print('not sending email')
 
     cur.execute("INSERT INTO availabilities (availabilities) VALUES (%s)",
