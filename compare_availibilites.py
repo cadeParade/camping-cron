@@ -12,9 +12,7 @@ import time
 import requests
 from dotenv import load_dotenv
 load_dotenv()
-# CREATE TABLE availabilities (id serial PRIMARY KEY, availabilities TEXT);
 
-# BASE_DATA_FILE = 'base_data.json'
 
 DATE_FORMAT = '%Y-%m-%dT%H:%M:%SZ'
 
@@ -149,8 +147,6 @@ class Availability:
         formatted_start_date = datetime.datetime.strptime(
             start_date, '%Y-%m-%dT%H:%M:%SZ').strftime('%Y-%m-%d')
         return f"https://www.recreation.gov/camping/campsites/{self.site_id()}?startDate={formatted_start_date}"
-        # f"https://www.recreation.gov/camping/campsites/{self.site_id()}?startDate=2024-08-19"
-        # return f"https://www.recreation.gov/camping/campsites/{self.site_id()}"
 
     def email_line(self):
         dates = ', '.join(self.formatted_dates())
@@ -164,18 +160,19 @@ def gather_data(campsites, dates_interested):
     export_data = {}
     all_new_availabilities = []
     base_data = read_base()
-    # if base_data:
-    for campground_id, campground_name in campsites.items():
-        campsites_data = get_month_data_for_campsite(campground_id)
-        export_data[campground_name] = campsites_data
-    #         if (campground_name in base_data):
-    #             new_availibilities = compare_availabilities(
-    #                 base_data[campground_name], campsites_data, campground_name, campground_id)
-    #             all_new_availabilities.extend(new_availibilities)
-    #         else:
-    #             base_data[campground_name] = campsites_data
+    if base_data:
+        for campground_id, campground_name in campsites.items():
+            campsites_data = get_month_data_for_campsite(campground_id)
+            export_data[campground_name] = campsites_data
 
-    #         time.sleep(3)
+            if (campground_name in base_data):
+                new_availibilities = compare_availabilities(
+                    base_data[campground_name], campsites_data, campground_name, campground_id)
+                all_new_availabilities.extend(new_availibilities)
+            else:
+                base_data[campground_name] = campsites_data
+
+            time.sleep(3)
 
     if len(all_new_availabilities) > 0:
         send_slack_notif(message='\n'.join(
