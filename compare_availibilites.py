@@ -37,11 +37,11 @@ CAMPSITES = {
     '232447': 'Upper pines, Yosemite NP',
     '232450': 'Lower Pines, Yosemite NP',
     '232449': 'North Pines, Yosemite NP',
-    '245558': 'Dardanelle, NEAR yosemite',
-    '245552': 'Beardsley, NEAR yosemite',
     '232254': 'Pinecrest, NEAR yosemite',
     '232451': 'Crane Flat, Yosemite NP',
     '233772': 'Diamond O, NEAR yosemite',
+    # '245552': 'Beardsley, NEAR yosemite',
+    # '245558': 'Dardanelle, NEAR yosemite',
     # '10083845': 'Tamarack Flats, Yosemite NP',
     # '234752': 'Sunset, Sequoia NP',
 }
