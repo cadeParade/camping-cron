@@ -20,24 +20,24 @@ MONTH = '08'
 YEAR = '2024'
 
 CAMPSITES = {
-    '232781': 'Hume Lake, Sequoia NP',
-    '233363': 'Eshom, Sequoia NP',
-    '232782': 'Princess, NEAR Sequoia NP',
-    '232785': 'Stony Creek, NEAR Sequoia NP',
-    '256932': 'Big Meadows, NEAR Sequoia NP',
-    '10124502': 'Azalea, Sequoia NP',
-    '251363': 'Ten Mile, NEAR Sequoia NP',
-    '10044710': 'Atwell Mill, Sequoia NP, up windy road',
-    '249979': 'Potwisha, Sequoia NP',
-    '232461': 'Lodgepole, Sequoia NP',
-    '253917': 'Sentinel Campground, Sequoia NP',
+    # '232781': 'Hume Lake, Sequoia NP',
+    # '233363': 'Eshom, Sequoia NP',
+    # '232782': 'Princess, NEAR Sequoia NP',
+    # '232785': 'Stony Creek, NEAR Sequoia NP',
+    # '256932': 'Big Meadows, NEAR Sequoia NP',
+    # '10124502': 'Azalea, Sequoia NP',
+    # '251363': 'Ten Mile, NEAR Sequoia NP',
+    # '10044710': 'Atwell Mill, Sequoia NP, up windy road',
+    # '249979': 'Potwisha, Sequoia NP',
+    # '232461': 'Lodgepole, Sequoia NP',
+    # '253917': 'Sentinel Campground, Sequoia NP',
     '10083831': 'Porcupine Flat, Yosemite NP',
     '232447': 'Upper pines, Yosemite NP',
     '232450': 'Lower Pines, Yosemite NP',
     '232449': 'North Pines, Yosemite NP',
-    '232254': 'Pinecrest, NEAR yosemite',
+    # '232254': 'Pinecrest, NEAR yosemite',
     '232451': 'Crane Flat, Yosemite NP',
-    '233772': 'Diamond O, NEAR yosemite',
+    # '233772': 'Diamond O, NEAR yosemite',
     # '245552': 'Beardsley, NEAR yosemite',
     # '245558': 'Dardanelle, NEAR yosemite',
     # '10083845': 'Tamarack Flats, Yosemite NP',
@@ -45,13 +45,13 @@ CAMPSITES = {
 }
 
 DATES_INTERESTED = [
-    '2024-08-13T00:00:00Z',
-    '2024-08-14T00:00:00Z',
-    '2024-08-15T00:00:00Z',
-    '2024-08-16T00:00:00Z',
+    # '2024-08-13T00:00:00Z',
+    # '2024-08-14T00:00:00Z',
+    # '2024-08-15T00:00:00Z',
+    # '2024-08-16T00:00:00Z',
     '2024-08-17T00:00:00Z',
-    '2024-08-18T00:00:00Z',
-    '2024-08-19T00:00:00Z',
+    # '2024-08-18T00:00:00Z',
+    # '2024-08-19T00:00:00Z',
 ]
 
 is_prod = os.environ.get('POSTGRES_HOST')
