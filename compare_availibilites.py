@@ -50,9 +50,12 @@ DATES_INTERESTED = [
     # '2024-08-14T00:00:00Z',
     # '2024-08-15T00:00:00Z',
     # '2024-08-16T00:00:00Z',
-    '2024-08-17T00:00:00Z',
+    # '2024-08-17T00:00:00Z',
     # '2024-08-18T00:00:00Z',
     # '2024-08-19T00:00:00Z',
+    '2025-12-30T00:00:00Z',
+    '2025-12-31T00:00:00Z',
+    '2026-01-01T00:00:00Z',
 ]
 
 is_prod = os.environ.get('POSTGRES_HOST')
@@ -78,7 +81,7 @@ def read_base():
         'select availabilities from availabilities order by id desc limit 1;')
     record = cur.fetchone()
     if record:
-        return json.loads(record[0])
+        return record[0]
 
 
 def get_month_data_for_campsite(campground_id):
