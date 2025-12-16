@@ -20,6 +20,7 @@ MONTH = '08'
 YEAR = '2024'
 
 CAMPSITES = {
+    '232496': 'Furnace Creek, Death Valley NP',
     # '232781': 'Hume Lake, Sequoia NP',
     # '233363': 'Eshom, Sequoia NP',
     # '232782': 'Princess, NEAR Sequoia NP',
@@ -31,12 +32,12 @@ CAMPSITES = {
     # '249979': 'Potwisha, Sequoia NP',
     # '232461': 'Lodgepole, Sequoia NP',
     # '253917': 'Sentinel Campground, Sequoia NP',
-    '10083831': 'Porcupine Flat, Yosemite NP',
-    '232447': 'Upper pines, Yosemite NP',
-    '232450': 'Lower Pines, Yosemite NP',
-    '232449': 'North Pines, Yosemite NP',
+    # '10083831': 'Porcupine Flat, Yosemite NP',
+    # '232447': 'Upper pines, Yosemite NP',
+    # '232450': 'Lower Pines, Yosemite NP',
+    # '232449': 'North Pines, Yosemite NP',
     # '232254': 'Pinecrest, NEAR yosemite',
-    '232451': 'Crane Flat, Yosemite NP',
+    # '232451': 'Crane Flat, Yosemite NP',
     # '233772': 'Diamond O, NEAR yosemite',
     # '245552': 'Beardsley, NEAR yosemite',
     # '245558': 'Dardanelle, NEAR yosemite',
