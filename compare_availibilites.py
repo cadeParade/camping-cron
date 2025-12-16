@@ -16,9 +16,6 @@ load_dotenv()
 
 DATE_FORMAT = '%Y-%m-%dT%H:%M:%SZ'
 
-MONTH = '08'
-YEAR = '2024'
-
 CAMPSITES = {
     '232496': 'Furnace Creek, Death Valley NP',
     # '232781': 'Hume Lake, Sequoia NP',
@@ -84,19 +81,48 @@ def read_base():
         return record[0]
 
 
-def get_month_data_for_campsite(campground_id):
-    try:
-        with urllib.request.urlopen(
-            f"https://www.recreation.gov/api/camps/availability/campground/{campground_id}/month?start_date={YEAR}-{MONTH}-01T00%3A00%3A00.000Z"
-        ) as url:
-            return json.loads(url.read().decode())['campsites']
-    except Exception as e:
+def get_months_from_dates(dates):
+    """Extract unique (year, month) tuples from date strings."""
+    months = set()
+    for date in dates:
+        dt = datetime.datetime.strptime(date, DATE_FORMAT)
+        months.add((dt.strftime('%Y'), dt.strftime('%m')))
+    return sorted(months)
+
+
+def get_month_data_for_campsite(campground_id, dates_interested):
+    """Fetch and merge availability data for all months covered by dates_interested."""
+    months = get_months_from_dates(dates_interested)
+    merged_campsites = {}
+
+    for year, month in months:
+        url_str = f"https://www.recreation.gov/api/camps/availability/campground/{campground_id}/month?start_date={year}-{month}-01T00%3A00%3A00.000Z"
+        print(f"-----fetching {year}-{month}-----", url_str)
         try:
-            error = e.read().decode()
-            json.loads(error)
-            raise Exception(f"Error: {error}")
-        except:
-            raise Exception(f"Error: {e}")
+            with urllib.request.urlopen(url_str) as url:
+                campsites_data = json.loads(url.read().decode())['campsites']
+
+                # Merge this month's data into our combined result
+                for site_id, site_data in campsites_data.items():
+                    if site_id not in merged_campsites:
+                        merged_campsites[site_id] = site_data
+                    else:
+                        # Merge the availabilities dict
+                        merged_campsites[site_id]['availabilities'].update(
+                            site_data['availabilities']
+                        )
+
+                time.sleep(1)  # Small delay between month requests
+
+        except Exception as e:
+            try:
+                error = e.read().decode()
+                json.loads(error)
+                raise Exception(f"Error: {error}")
+            except:
+                raise Exception(f"Error: {e}")
+
+    return merged_campsites
 
 
 def compare_availabilities(base_availabilities, head_availabilities, campground_name, campground_id):
@@ -164,9 +190,10 @@ def gather_data(campsites, dates_interested):
     export_data = {}
     all_new_availabilities = []
     base_data = read_base()
+    print("-----base_data-----", base_data)
     if base_data:
         for campground_id, campground_name in campsites.items():
-            campsites_data = get_month_data_for_campsite(campground_id)
+            campsites_data = get_month_data_for_campsite(campground_id, dates_interested)
             export_data[campground_name] = campsites_data
 
             if (campground_name in base_data):
